@@ -9,7 +9,10 @@ import {
   RotateCcw,
   Sparkles,
   ShieldCheck,
+  Zap,
+  Award,
 } from 'lucide-react';
+import { ReactionTrainerMinigame } from './ReactionTrainerMinigame';
 
 export type ShortcutCategory = 'Inventário' | 'Técnico' | 'Combate' | 'Construção';
 
@@ -201,6 +204,7 @@ const SHORTCUTS_DATA: ShortcutCardItem[] = [
 const STORAGE_KEY_MASTERED = 'craftlab_mastered_shortcuts_v1';
 
 export const KeyboardMouseAcademy: React.FC = () => {
+  const [viewMode, setViewMode] = useState<'cards' | 'minigame'>('cards');
   const [selectedCategory, setSelectedCategory] = useState<'Todos' | ShortcutCategory>('Todos');
   const [lastPressedKey, setLastPressedKey] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -279,28 +283,63 @@ export const KeyboardMouseAcademy: React.FC = () => {
           </p>
         </div>
 
-        {/* Progress & Reset Box */}
-        <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-slate-950 border border-zinc-800 shrink-0">
-          <div>
-            <div className="text-xs text-zinc-400">Atalhos Dominados</div>
-            <div className="text-base font-bold font-mono tabular-nums text-emerald-400">
-              {masteredCount} / {SHORTCUTS_DATA.length} ({Math.round((masteredCount / SHORTCUTS_DATA.length) * 100)}%)
-            </div>
-          </div>
-          {masteredCount > 0 && (
+        {/* Mode Toggle: Cartões vs Minigame */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 shrink-0">
+          <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-950 border border-zinc-800">
             <button
               type="button"
-              onClick={() => setMasteredIds({})}
-              className="p-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-zinc-800 transition-colors"
-              title="Resetar treino de atalhos"
+              onClick={() => setViewMode('cards')}
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold transition-colors whitespace-nowrap shrink-0 ${
+                viewMode === 'cards'
+                  ? 'bg-emerald-500 text-slate-950 shadow-sm'
+                  : 'text-zinc-400 hover:text-zinc-200'
+              }`}
             >
-              <RotateCcw className="w-4 h-4" />
+              <Keyboard className="w-3.5 h-3.5" />
+              <span>Cartões de Atalhos</span>
             </button>
-          )}
+            <button
+              type="button"
+              onClick={() => setViewMode('minigame')}
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-semibold transition-colors whitespace-nowrap shrink-0 ${
+                viewMode === 'minigame'
+                  ? 'bg-emerald-500 text-slate-950 shadow-sm'
+                  : 'text-emerald-400 hover:bg-zinc-800/80'
+              }`}
+            >
+              <Zap className="w-3.5 h-3.5" />
+              <span>Minigame de Reação</span>
+            </button>
+          </div>
+
+          {/* Progress & Reset Box */}
+          <div className="flex items-center gap-3 p-2.5 px-3.5 rounded-xl bg-slate-950 border border-zinc-800 shrink-0">
+            <div>
+              <div className="text-[11px] text-zinc-400">Atalhos Dominados</div>
+              <div className="text-sm font-bold font-mono tabular-nums text-emerald-400">
+                {masteredCount} / {SHORTCUTS_DATA.length} ({Math.round((masteredCount / SHORTCUTS_DATA.length) * 100)}%)
+              </div>
+            </div>
+            {masteredCount > 0 && (
+              <button
+                type="button"
+                onClick={() => setMasteredIds({})}
+                className="p-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 border border-zinc-800 transition-colors"
+                title="Resetar treino de atalhos"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Category Filter Bar + Interactive Live Key Detector */}
+      {/* Conditionally render Minigame or Cards */}
+      {viewMode === 'minigame' ? (
+        <ReactionTrainerMinigame />
+      ) : (
+        <>
+          {/* Category Filter Bar + Interactive Live Key Detector */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex flex-wrap items-center gap-1.5 p-1.5 rounded-xl bg-slate-950 border border-zinc-800">
           {(['Todos', 'Inventário', 'Técnico', 'Combate', 'Construção'] as const).map((cat) => {
@@ -466,6 +505,8 @@ export const KeyboardMouseAcademy: React.FC = () => {
           </span>
         </div>
       </div>
+        </>
+      )}
     </section>
   );
 };

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { mcAudio, MinecraftSoundType } from '../utils/minecraftSounds';
 
 export type DimensionTheme = 'overworld' | 'nether' | 'end';
 
@@ -23,7 +24,7 @@ export const THEME_CONFIGS: Record<DimensionTheme, ThemeClasses> = {
   overworld: {
     id: 'overworld',
     label: 'Overworld',
-    dimensionSubtitle: 'Esmeralda & Ardósia',
+    dimensionSubtitle: 'Superfície & Cavernas Deepslate (Y=-59)',
     pageBg: 'bg-slate-950 text-zinc-100',
     headerBg: 'bg-slate-950/90 border-zinc-800/80',
     cardBg: 'bg-zinc-900/50',
@@ -39,7 +40,7 @@ export const THEME_CONFIGS: Record<DimensionTheme, ThemeClasses> = {
   nether: {
     id: 'nether',
     label: 'Nether',
-    dimensionSubtitle: 'Carmesim & Basalto',
+    dimensionSubtitle: 'Submundo Carmesim & Teto Y=128',
     pageBg: 'bg-[#120507] text-rose-50',
     headerBg: 'bg-[#120507]/90 border-rose-950/80',
     cardBg: 'bg-rose-950/25',
@@ -55,9 +56,9 @@ export const THEME_CONFIGS: Record<DimensionTheme, ThemeClasses> = {
   end: {
     id: 'end',
     label: 'The End',
-    dimensionSubtitle: 'Púrpura & Vazio',
-    pageBg: 'bg-[#090414] text-purple-50',
-    headerBg: 'bg-[#090414]/90 border-purple-950/80',
+    dimensionSubtitle: 'Ilha do Dragão & End Cities no Vazio',
+    pageBg: 'bg-[#080312] text-purple-50',
+    headerBg: 'bg-[#080312]/90 border-purple-950/80',
     cardBg: 'bg-purple-950/25',
     cardBorder: 'border-purple-900/40',
     activeBorder: 'border-purple-500/80',
@@ -66,7 +67,7 @@ export const THEME_CONFIGS: Record<DimensionTheme, ThemeClasses> = {
     accentText: 'text-purple-400',
     accentSubtleBg: 'bg-purple-950/35 border-purple-500/40',
     inputFocus: 'focus:border-purple-500',
-    heroGlow: 'from-purple-950/35 via-[#090414] to-[#090414]',
+    heroGlow: 'from-purple-950/35 via-[#080312] to-[#080312]',
   },
 };
 
@@ -75,6 +76,9 @@ interface ThemeContextValue {
   setTheme: (next: DimensionTheme) => void;
   cycleTheme: () => void;
   themeClasses: ThemeClasses;
+  isSoundMuted: boolean;
+  toggleSoundMute: () => void;
+  playSound: (sound: MinecraftSoundType) => void;
 }
 
 const STORAGE_KEY_THEME = 'craftlab_dimension_theme_v1';
@@ -84,6 +88,9 @@ const ThemeContext = createContext<ThemeContextValue>({
   setTheme: () => {},
   cycleTheme: () => {},
   themeClasses: THEME_CONFIGS.overworld,
+  isSoundMuted: false,
+  toggleSoundMute: () => {},
+  playSound: () => {},
 });
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -99,6 +106,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return 'overworld';
   });
 
+  const [isSoundMuted, setIsSoundMuted] = useState<boolean>(() => mcAudio.isMuted());
+
   useEffect(() => {
     document.documentElement.setAttribute('data-dimension', theme);
     try {
@@ -110,12 +119,24 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const setTheme = (next: DimensionTheme) => {
     setThemeState(next);
+    if (next === 'overworld') mcAudio.play('portal_overworld');
+    else if (next === 'nether') mcAudio.play('portal_nether');
+    else mcAudio.play('portal_end');
   };
 
   const cycleTheme = () => {
-    setThemeState((prev) =>
-      prev === 'overworld' ? 'nether' : prev === 'nether' ? 'end' : 'overworld'
-    );
+    const next: DimensionTheme =
+      theme === 'overworld' ? 'nether' : theme === 'nether' ? 'end' : 'overworld';
+    setTheme(next);
+  };
+
+  const toggleSoundMute = () => {
+    const nextMuted = mcAudio.toggleMute();
+    setIsSoundMuted(nextMuted);
+  };
+
+  const playSound = (sound: MinecraftSoundType) => {
+    mcAudio.play(sound);
   };
 
   return (
@@ -125,6 +146,9 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         setTheme,
         cycleTheme,
         themeClasses: THEME_CONFIGS[theme],
+        isSoundMuted,
+        toggleSoundMute,
+        playSound,
       }}
     >
       {children}

@@ -27,6 +27,8 @@ import {
   Flame,
   Trees,
   Orbit,
+  Boxes,
+  Compass,
   X,
 } from 'lucide-react';
 import {
@@ -42,14 +44,18 @@ import { HardwareJvmCalculator } from './components/HardwareJvmCalculator';
 import { ResourceComparatorSection } from './components/ResourceComparatorSection';
 import { DoctorFpsCrashAi } from './components/DoctorFpsCrashAi';
 import { KeyboardMouseAcademy } from './components/KeyboardMouseAcademy';
+import { ModpackBuilder } from './components/ModpackBuilder';
+import { SurvivalMasteryHub } from './components/SurvivalMasteryHub';
+import { DimensionWorldExplorer } from './components/DimensionWorldExplorer';
+import { VeteranEngineeringLab } from './components/VeteranEngineeringLab';
 import { useDimensionTheme, DimensionTheme } from './context/ThemeContext';
 
 const STORAGE_KEY_STEPS = 'craftlab_completed_steps_v2';
 
-type PlatformTab = 'all' | 'doctor-ai' | 'academy' | 'tutorials' | 'calculator' | 'comparator';
+type PlatformTab = 'all' | 'dimensions' | 'survival-mastery' | 'veteran-lab' | 'modpack-builder' | 'doctor-ai' | 'academy' | 'tutorials' | 'calculator' | 'comparator';
 
 export default function App() {
-  const { theme, setTheme, themeClasses } = useDimensionTheme();
+  const { theme, setTheme, themeClasses, playSound } = useDimensionTheme();
   const [activePlatformTab, setActivePlatformTab] = useState<PlatformTab>('all');
   const [selectedLevel, setSelectedLevel] = useState<'Todos' | SkillLevel>('Todos');
   const [selectedCategory, setSelectedCategory] = useState<'Todas' | TutorialCategory>('Todas');
@@ -130,17 +136,27 @@ export default function App() {
 
   const toggleStepCompletion = (tutorialId: string, stepNumber: number) => {
     const key = `${tutorialId}-${stepNumber}`;
-    setCompletedSteps((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
+    setCompletedSteps((prev) => {
+      const nextChecked = !prev[key];
+      if (nextChecked) {
+        playSound('xp_orb');
+      } else {
+        playSound('click');
+      }
+      return {
+        ...prev,
+        [key]: nextChecked,
+      };
+    });
   };
 
   const resetAllProgress = () => {
+    playSound('click');
     setCompletedSteps({});
   };
 
   const handleCopySnippet = (text: string, keyId: string) => {
+    playSound('piston');
     navigator.clipboard.writeText(text);
     setCopiedCommandKey(keyId);
     setTimeout(() => setCopiedCommandKey(null), 2000);
@@ -210,8 +226,22 @@ export default function App() {
             CraftLab
           </a>
 
-          {/* Zone 2: 5 concise single-line navigation links */}
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-zinc-400">
+          {/* Zone 2: 7 concise single-line navigation links */}
+          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-zinc-400">
+            <a
+              href="#guia-zeramento"
+              onClick={() => setActivePlatformTab('survival-mastery')}
+              className="hover:text-emerald-400 hover:underline underline-offset-4 transition-colors whitespace-nowrap shrink-0"
+            >
+              Zerar o Mine
+            </a>
+            <a
+              href="#modpack-builder"
+              onClick={() => setActivePlatformTab('modpack-builder')}
+              className="hover:text-emerald-400 hover:underline underline-offset-4 transition-colors whitespace-nowrap shrink-0"
+            >
+              Modpacks
+            </a>
             <a
               href="#guias"
               onClick={() => setActivePlatformTab('all')}
@@ -269,7 +299,10 @@ export default function App() {
           <div className="flex flex-wrap items-center gap-1.5 p-1.5 rounded-2xl bg-zinc-900/90 border border-zinc-800">
             <button
               type="button"
-              onClick={() => setActivePlatformTab('all')}
+              onClick={() => {
+                playSound('click');
+                setActivePlatformTab('all');
+              }}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-colors whitespace-nowrap shrink-0 ${
                 activePlatformTab === 'all'
                   ? 'bg-emerald-500 text-slate-950'
@@ -277,7 +310,68 @@ export default function App() {
               }`}
             >
               <Layers className="w-3.5 h-3.5" />
-              <span>Visão Completa do Hub</span>
+              <span>Visão Completa</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                playSound('click');
+                setActivePlatformTab('dimensions');
+              }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-colors whitespace-nowrap shrink-0 ${
+                activePlatformTab === 'dimensions'
+                  ? 'bg-emerald-500 text-slate-950'
+                  : 'text-emerald-400 hover:bg-zinc-800/80'
+              }`}
+            >
+              <Trees className="w-3.5 h-3.5" />
+              <span>Mundos, Blocos 3D & Sons</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                playSound('click');
+                setActivePlatformTab('survival-mastery');
+              }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-colors whitespace-nowrap shrink-0 ${
+                activePlatformTab === 'survival-mastery'
+                  ? 'bg-emerald-500 text-slate-950'
+                  : 'text-emerald-400 hover:bg-zinc-800/80'
+              }`}
+            >
+              <Compass className="w-3.5 h-3.5" />
+              <span>Zerar o Mine & Mega Farms</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                playSound('anvil');
+                setActivePlatformTab('veteran-lab');
+              }}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-colors whitespace-nowrap shrink-0 ${
+                activePlatformTab === 'veteran-lab'
+                  ? 'bg-emerald-500 text-slate-950'
+                  : 'text-amber-400 hover:bg-zinc-800/80'
+              }`}
+            >
+              <Terminal className="w-3.5 h-3.5" />
+              <span>Bigorna & Engine Veterana</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActivePlatformTab('modpack-builder')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-colors whitespace-nowrap shrink-0 ${
+                activePlatformTab === 'modpack-builder'
+                  ? 'bg-emerald-500 text-slate-950'
+                  : 'text-zinc-300 hover:text-white'
+              }`}
+            >
+              <Boxes className="w-3.5 h-3.5" />
+              <span>Verificador de Modpacks</span>
             </button>
 
             <button
@@ -618,6 +712,13 @@ export default function App() {
               </div>
             </div>
           </section>
+        )}
+
+        {/* 1.5. Interactive Dimension World Explorer (Overworld, Nether, The End Blocks & Sounds) */}
+        {(activePlatformTab === 'all' || activePlatformTab === 'dimensions') && (
+          <DimensionWorldExplorer
+            onNavigateToSection={(targetTab) => setActivePlatformTab(targetTab)}
+          />
         )}
 
         {/* 2. Interactive Step-by-Step Tutorial Viewer (#guias) */}
@@ -1091,6 +1192,21 @@ export default function App() {
               </div>
             )}
           </section>
+        )}
+
+        {/* Guia Mestre de Sobrevivência, Zeramento & Mega Farms */}
+        {(activePlatformTab === 'all' || activePlatformTab === 'survival-mastery') && (
+          <SurvivalMasteryHub />
+        )}
+
+        {/* Laboratório do Veterano: Bigorna Binária, Bancada 3x3 & Mecânicas da Engine */}
+        {(activePlatformTab === 'all' || activePlatformTab === 'veteran-lab') && (
+          <VeteranEngineeringLab />
+        )}
+
+        {/* Gerador & Verificador de Conflito de Modpacks */}
+        {(activePlatformTab === 'all' || activePlatformTab === 'modpack-builder') && (
+          <ModpackBuilder />
         )}
 
         {/* Academia de Teclado & Mouse (Ex-Mobile) */}

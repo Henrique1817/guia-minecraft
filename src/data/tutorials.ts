@@ -798,6 +798,107 @@ export const TUTORIALS_DATA: TutorialItem[] = [
       },
     ],
   },
+  {
+    id: 'automacao-base-survival-triagem-redstone-impulse-sv',
+    indexNumber: '07',
+    title: 'Automação de Base Survival: Separador de Baús Redstone (ImpulseSV) & Logística',
+    subtitle: 'Engenharia de Triagem 41-1-1-1-1 · Overflow Proof · Elevador de Água & Superfornalhas',
+    level: 'Intermediário',
+    estimatedTime: '25 min',
+    category: 'Modpacks & Engenharia',
+    edition: 'Java Edition 1.13 – 1.21.4+',
+    modloader: 'Vanilla Survival / Fabric',
+    summary:
+      'Construa uma sala de baús 100% automatizada no modo sobrevivência: jogue todos os itens da sua mochila ou das suas farms em 1 único baú de entrada e deixe o circuito clássico ImpulseSV (à prova de transbordamento) separar minérios, comidas, pedras e drops cada um em sua respectiva coluna de baús.',
+    targetFpsGain: 'Uso de Composters sobre Funis reduz lag de MSPT em -65%',
+    vramRequirement: 'Zero impacto de VRAM (100% Redstone Nativo)',
+    steps: [
+      {
+        stepNumber: 1,
+        title: 'A Coluna de Baús e a Linha de Funis de Distribuição',
+        description:
+          'Empilhe de 2 a 4 Baús Duplos um sobre o outro para cada item que deseja organizar. Atrás dos baús, conecte Funis apontando diretamente para a traseira de cada baú. Acima dessa fileira, passe a linha principal de transporte (Funis apontando para o lado ou correnteza de água sobre Gelo Compactado) que levará os itens do seu Baú de Entrada geral.',
+        commandOrPath: 'Linha Superior: Transporte Lateral -> Linha do Meio: Funil Filtro (Apontado p/ o Comparador) -> Linha Inferior: Destrava c/ Tocha',
+        commandLabel: 'Copiar Arquitetura das 3 Camadas',
+        verificationCheck:
+          'Como saber se deu certo: Olhe para o bico inferior do funil do meio (camada de filtro): ele NÃO deve apontar para o baú nem para baixo, e sim para trás (em direção ao bloco onde ficará o Comparador), garantindo que ele nunca despeje os itens de filtro sem permissão.',
+      },
+      {
+        stepNumber: 2,
+        title: 'O Circuito ImpulseSV (À Prova de Transbordamento / Overflow-Proof)',
+        description:
+          'Atrás do funil de filtro, coloque um Comparador de Redstone saindo dele e apontando para uma linha de 3 Pós de Redstone. Abaixo do segundo bloco, posicione um Repetidor apontando para o bloco que sustenta uma Tocha de Redstone encostada no funil inferior. Enquanto não houver itens passando, a Tocha de Redstone mantém o funil de baixo TRAVADO.',
+        commandOrPath: 'Comparador (Força 3 = 45 itens) -> 3 Pós de Redstone -> Repetidor (1 Tick) -> Bloco c/ Tocha de Redstone',
+        commandLabel: 'Copiar Lógica de Sinal Redstone',
+        verificationCheck:
+          'Como saber se deu certo: A Tocha de Redstone embaixo do funil de filtro deve ficar ACESA em repouso. Ela só se apagará por uma fração de segundo quando o 42º item entrar no funil de filtro.',
+      },
+      {
+        stepNumber: 3,
+        title: 'Configurando o Filtro dentro do Funil: A Regra 41 - 1 - 1 - 1 - 1',
+        description:
+          'Abra uma Bigorna e renomeie 4 itens baratos (ex: 4 gravetos ou 4 pedregulhos renomeados para "Filtro"). Abra o funil do meio (o que aponta para o comparador): nos 4 últimos slots da direita, coloque 1 item renomeado em cada slot. No 1º slot da esquerda, coloque 41 unidades do item que você quer guardar naquele baú (ex: 41 Diamantes ou 41 Bifes).',
+        commandOrPath: '[Slot 1: 41x Item Alvo] | [Slot 2: 1x Filtro] | [Slot 3: 1x Filtro] | [Slot 4: 1x Filtro] | [Slot 5: 1x Filtro]',
+        commandLabel: 'Copiar Padrão 41-1-1-1-1',
+        verificationCheck:
+          'Como saber se deu certo: Se você colocar 64 itens no 1º slot, o sistema puxará 23 itens para o baú da frente e estacionará exatamente em 41 itens no 1º slot. Para itens que só empilham até 16 (como Pérolas do End ou Ovos), o filtro estacionará automaticamente em 10 unidades.',
+      },
+      {
+        stepNumber: 4,
+        title: 'Elevador de Bolhas (Alma + Alga) & Baú de Sobra (Overflow Chest)',
+        description:
+          'Para enviar itens de farms subterrâneas ou de um baú no chão para o topo do separador, construa um tubo vertical de vidro preenchido com fontes de água (plante Alga Marinha do fundo ao topo para transformar tudo em fonte) e coloque Areia das Almas (Soul Sand) na base. No final da linha de separadores, coloque sempre 2 Baús Duplos sem filtro para receber ferramentas, armaduras e itens raros.',
+        commandOrPath: 'Areia das Almas + Coluna de Água c/ Alga = Elevador Instantâneo | Composter sobre Funis Abertos = Anti-Lag',
+        commandLabel: 'Copiar Regra de Elevação e Anti-Lag',
+        verificationCheck:
+          'Como saber se deu certo: Jogue 1 pack de vários itens misturados no baú de entrada: cada tipo irá para seu baú com Placa/Moldura e qualquer item não cadastrado cairá intacto no Baú de Sobra final.',
+      },
+    ],
+    verificationAlerts: [
+      {
+        id: 'alert-hopper-42-signal',
+        severity: 'Crítico',
+        title: 'Por que usar 3 Pós de Redstone (Força 3) e Nunca 2 Pós?',
+        detail:
+          'Se você construir o separador mais curto com apenas 2 pós de redstone atrás do comparador, quando um baú encher até o topo e o funil acumular 64 itens no 1º slot, o sinal chegará a Força 4 e vazará para os funis vizinhos, quebrando todos os filtros da sua sala de baús!',
+        resolution:
+          'Use sempre o modelo com 3 pós de redstone (padrão ImpulseSV) e 4 itens renomeados na bigorna nos slots 2 a 5. Assim, mesmo que um baú lote 100%, o sinal nunca ultrapassará 3 blocos e os vizinhos ficarão 100% protegidos.',
+      },
+      {
+        id: 'alert-non-stackable-items',
+        severity: 'Atenção',
+        title: 'Espadas, Armaduras, Poções e Livros Encantados (Itens Não-Empilháveis)',
+        detail:
+          'Itens que não empilham (ocupam 1 slot inteiro sozinhos) emitem carga equivalente a 64 itens no comparador, mas não podem ser filtrados pelo método 41-1-1-1-1.',
+        resolution:
+          'Deixe espadas, arcos e livros encantados passarem direto até os Baús de Sobra (Overflow) no fim do corredor, ou use Allays com Blocos de Nota Musical para separar itens não-empilháveis especificamente.',
+      },
+    ],
+    hardwareTips: [
+      {
+        component: 'CPU',
+        minimumSpec: 'Até 150 Funis sem otimização',
+        recommendedSpec: 'Composteiras (Composters) em cima de Funis expostos',
+        optimizationAdvice:
+          'Cada funil aberto verifica a todo tick (20x por segundo) se há itens flutuando no ar acima dele. Colocar uma Composteira (Composter) ou Fornalha em cima da linha de funis desativa essa busca e reduz o consumo de CPU da sala de baús em 65%!',
+        fpsImpact: 'Evita queda de FPS e lag de ticks (MSPT) em megabases com mais de 200 baús.',
+      },
+    ],
+    recommendedMods: [
+      {
+        name: "Tom's Simple Storage Mod",
+        role: 'Alternativa modada segura que conecta todos os baús em 1 terminal de busca',
+        source: 'Modrinth',
+        url: 'https://modrinth.com/mod/toms-storage',
+      },
+      {
+        name: 'Lithium',
+        role: 'Otimiza drasticamente a transferência de itens em funis e redstone na Java Edition',
+        source: 'Modrinth',
+        url: 'https://modrinth.com/mod/lithium',
+      },
+    ],
+  },
 ];
 
 export const SHADER_PRESETS: ShaderPreset[] = [
