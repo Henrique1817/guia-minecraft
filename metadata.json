@@ -1,0 +1,6 @@
+{
+  "name": "CraftLab: Do Bedrock ao Ultra Realismo",
+  "description": "Plataforma interativa de engenharia gráfica, otimização de performance, modloaders e shaders ultra-realistas para Minecraft Java e Bedrock Edition.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

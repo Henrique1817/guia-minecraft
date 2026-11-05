@@ -1,0 +1,98 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root,
+  [data-dimension="overworld"] {
+    --font-display: 'Bricolage Grotesque', sans-serif;
+    --font-sans: 'Plus Jakarta Sans', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+    --canvas-bg: #020617;
+  }
+
+  /* Nether Dimension Theme (Red / Crimson / Dark Basalt) */
+  [data-dimension="nether"] {
+    --canvas-bg: #120507;
+    /* Map primary emerald accents to Nether Crimson / Blaze Red */
+    --color-emerald-200: #fecdd3;
+    --color-emerald-300: #fda4af;
+    --color-emerald-400: #fb7185;
+    --color-emerald-500: #f43f5e;
+    --color-emerald-600: #e11d48;
+    --color-emerald-950: #4c0519;
+
+    /* Map secondary violet/indigo accents to Magma Amber / Crimson */
+    --color-violet-200: #fed7aa;
+    --color-violet-300: #fdba74;
+    --color-violet-400: #fb923c;
+    --color-violet-500: #f97316;
+    --color-violet-600: #ea580c;
+    --color-indigo-200: #fecdd3;
+    --color-indigo-300: #fda4af;
+    --color-indigo-400: #fb7185;
+    --color-indigo-500: #f43f5e;
+    --color-indigo-900: #881337;
+    --color-indigo-950: #4c0519;
+
+    /* Map dark neutral surfaces to Deep Basalt & Netherbrick Dark */
+    --color-slate-950: #120507;
+    --color-slate-900: #1c090c;
+    --color-zinc-900: #220b0f;
+    --color-zinc-800: #3d151c;
+    --color-zinc-700: #571e28;
+  }
+
+  /* The End Dimension Theme (Ender Purple / Chorus / Void Dark) */
+  [data-dimension="end"] {
+    --canvas-bg: #090414;
+    /* Map primary emerald accents to Ender Dragon Purple / Chorus Magenta */
+    --color-emerald-200: #f3e8ff;
+    --color-emerald-300: #d8b4fe;
+    --color-emerald-400: #c084fc;
+    --color-emerald-500: #a855f7;
+    --color-emerald-600: #9333ea;
+    --color-emerald-950: #3b0764;
+
+    /* Map secondary violet/indigo accents to Chorus Fuchsia / End Portal Cyan-Violet */
+    --color-violet-200: #fae8ff;
+    --color-violet-300: #f0abfc;
+    --color-violet-400: #e879f9;
+    --color-violet-500: #d946ef;
+    --color-violet-600: #c026d3;
+    --color-indigo-200: #e9d5ff;
+    --color-indigo-300: #d8b4fe;
+    --color-indigo-400: #c084fc;
+    --color-indigo-500: #a855f7;
+    --color-indigo-900: #581c87;
+    --color-indigo-950: #2e1065;
+
+    /* Map dark neutral surfaces to Deep End Void & Obsidian Dark */
+    --color-slate-950: #090414;
+    --color-slate-900: #120826;
+    --color-zinc-900: #160b2e;
+    --color-zinc-800: #2e1859;
+    --color-zinc-700: #442480;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--canvas-bg);
+    color: #f4f4f5;
+    overflow-x: hidden;
+    transition: background-color 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  h1, h2, h3, h4, .font-display {
+    font-family: var(--font-display);
+    text-wrap: balance;
+  }
+
+  code, pre, .font-mono {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
