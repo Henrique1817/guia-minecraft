@@ -16,6 +16,7 @@ import {
   ChevronRight,
   Layers,
   ArrowRight,
+  AlertTriangle,
 } from 'lucide-react';
 import {
   SURVIVAL_STAGES,
@@ -26,6 +27,7 @@ import {
 import { useDimensionTheme } from '../context/ThemeContext';
 
 const STORAGE_KEY_CHECKPOINTS = 'craftlab_survival_checkpoints_v1';
+const STORAGE_KEY_FARM_STEPS = 'craftlab_survival_farm_steps_v1';
 
 export const SurvivalMasteryHub: React.FC = () => {
   const { playSound } = useDimensionTheme();
@@ -34,6 +36,36 @@ export const SurvivalMasteryHub: React.FC = () => {
   const [selectedStageId, setSelectedStageId] = useState<string>(SURVIVAL_STAGES[0].id);
   const [selectedFarmId, setSelectedFarmId] = useState<string>(MEGA_FARMS_BLUEPRINTS[0].id);
   const [copiedMaterials, setCopiedMaterials] = useState<string | null>(null);
+
+  // Farm steps completion persistence (keyed as `${farmId}-${step}`)
+  const [completedFarmSteps, setCompletedFarmSteps] = useState<Record<string, boolean>>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_FARM_STEPS);
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY_FARM_STEPS, JSON.stringify(completedFarmSteps));
+    } catch {
+      // Storage safe
+    }
+  }, [completedFarmSteps]);
+
+  const toggleFarmStep = (farmId: string, stepNumber: number) => {
+    const key = `${farmId}-${stepNumber}`;
+    setCompletedFarmSteps((prev) => {
+      const nextVal = !prev[key];
+      playSound(nextVal ? 'xp_orb' : 'click');
+      return {
+        ...prev,
+        [key]: nextVal,
+      };
+    });
+  };
 
   // Checkpoints persistence
   const [completedCheckpoints, setCompletedCheckpoints] = useState<Record<string, boolean>>(() => {
@@ -521,34 +553,104 @@ export const SurvivalMasteryHub: React.FC = () => {
 
             {/* Right Construction Steps (7 cols) */}
             <div className="lg:col-span-7 rounded-2xl border border-zinc-800 bg-slate-950/90 p-6 sm:p-8 space-y-5">
-              <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
-                <div className="text-sm font-bold text-zinc-100">
-                  Passo a Passo de Engenharia
+              <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-zinc-800">
+                <div>
+                  <div className="text-sm font-bold text-zinc-100">
+                    Passo a Passo Detalhado de Engenharia
+                  </div>
+                  <div className="text-xs text-zinc-400 mt-0.5">
+                    Siga as orientações de bloco e marque cada etapa concluída
+                  </div>
                 </div>
-                <div className="text-xs text-zinc-400 font-mono">
-                  {activeFarm.steps.length} Etapas
+                <div className="text-xs font-mono px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-800 text-amber-300">
+                  {activeFarm.steps.filter((s) => completedFarmSteps[`${activeFarm.id}-${s.step}`]).length} de {activeFarm.steps.length} etapas concluídas
                 </div>
               </div>
 
               <div className="space-y-4">
-                {activeFarm.steps.map((st) => (
-                  <div
-                    key={st.step}
-                    className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-2.5"
-                  >
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-bold text-amber-400">Passo {st.step}</span>
+                {activeFarm.steps.map((st) => {
+                  const stepKey = `${activeFarm.id}-${st.step}`;
+                  const isDone = !!completedFarmSteps[stepKey];
+
+                  return (
+                    <div
+                      key={st.step}
+                      className={`p-5 rounded-xl border transition-all space-y-3 ${
+                        isDone
+                          ? 'bg-emerald-950/20 border-emerald-500/40'
+                          : 'bg-zinc-900/60 border-zinc-800 hover:border-zinc-700'
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <button
+                          type="button"
+                          onClick={() => toggleFarmStep(activeFarm.id, st.step)}
+                          className="mt-0.5 text-emerald-400 hover:text-emerald-300 transition-colors shrink-0"
+                          title={isDone ? 'Marcar como não concluído' : 'Marcar como concluído'}
+                        >
+                          {isDone ? (
+                            <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                          ) : (
+                            <Circle className="w-5 h-5 text-zinc-500 hover:text-emerald-400" />
+                          )}
+                        </button>
+
+                        <div className="flex-1 min-w-0 space-y-2.5">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <h4
+                              onClick={() => toggleFarmStep(activeFarm.id, st.step)}
+                              className={`text-sm font-bold cursor-pointer ${
+                                isDone ? 'text-emerald-300 line-through' : 'text-zinc-100'
+                              }`}
+                            >
+                              Etapa {st.step}: {st.title}
+                            </h4>
+                            <span className="text-[11px] font-mono text-amber-400/90 font-semibold">
+                              {isDone ? '✓ Feito no Jogo' : 'Clique para marcar'}
+                            </span>
+                          </div>
+
+                          <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">
+                            {st.action}
+                          </p>
+
+                          {/* Block Placement Orientation Guide */}
+                          {st.blockPlacementGuide && (
+                            <div className="p-3 rounded-lg bg-amber-950/25 border border-amber-500/35 text-xs text-amber-200 flex items-start gap-2.5">
+                              <Compass className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                              <div className="leading-relaxed">
+                                <strong className="text-amber-300">Posicionamento de Bloco & Orientação: </strong>
+                                {st.blockPlacementGuide}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Troubleshooting Advice */}
+                          {st.troubleshooting && (
+                            <div className="p-3 rounded-lg bg-rose-950/25 border border-rose-500/40 text-xs text-rose-200 flex items-start gap-2.5">
+                              <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                              <div className="leading-relaxed">
+                                <strong className="text-rose-300">Atenção (Erro Comum): </strong>
+                                {st.troubleshooting}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Pro Tip */}
+                          {st.proTip && (
+                            <div className="p-2.5 rounded-lg bg-slate-950/90 border border-zinc-800 text-xs text-zinc-400 flex items-start gap-2">
+                              <Sparkles className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                              <div className="leading-relaxed">
+                                <strong className="text-emerald-300">Dica dos Veteranos: </strong>
+                                {st.proTip}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">{st.action}</p>
-                    <div className="p-2.5 rounded-lg bg-slate-950/90 border border-zinc-800 text-xs text-zinc-400 flex items-start gap-2">
-                      <Sparkles className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
-                      <span>
-                        <strong className="text-amber-300">Dica dos Veteranos: </strong>
-                        {st.proTip}
-                      </span>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -686,25 +788,103 @@ export const SurvivalMasteryHub: React.FC = () => {
 
               {/* Build Steps */}
               <div className="space-y-4">
-                <div className="text-xs font-semibold text-zinc-300">
-                  Passo a Passo de Construção:
-                </div>
-
-                {activeFarm.steps.map((st) => (
-                  <div key={st.step} className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 space-y-2">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-bold text-zinc-100">Passo {st.step}</span>
+                <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-zinc-800">
+                  <div>
+                    <div className="text-sm font-bold text-zinc-100">
+                      Passo a Passo de Engenharia Industrial
                     </div>
-                    <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">{st.action}</p>
-                    <div className="p-2.5 rounded-lg bg-slate-950/90 border border-zinc-800 text-xs text-zinc-400 flex items-start gap-2">
-                      <Sparkles className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
-                      <span>
-                        <strong className="text-emerald-300">Dica: </strong>
-                        {st.proTip}
-                      </span>
+                    <div className="text-xs text-zinc-400 mt-0.5">
+                      Siga a sequência e marque cada etapa realizada no seu mundo
                     </div>
                   </div>
-                ))}
+                  <div className="text-xs font-mono px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-800 text-emerald-400">
+                    {activeFarm.steps.filter((s) => completedFarmSteps[`${activeFarm.id}-${s.step}`]).length} de {activeFarm.steps.length} etapas concluídas
+                  </div>
+                </div>
+
+                {activeFarm.steps.map((st) => {
+                  const stepKey = `${activeFarm.id}-${st.step}`;
+                  const isDone = !!completedFarmSteps[stepKey];
+
+                  return (
+                    <div
+                      key={st.step}
+                      className={`p-5 rounded-xl border transition-all space-y-3 ${
+                        isDone
+                          ? 'bg-emerald-950/20 border-emerald-500/40'
+                          : 'bg-zinc-900/60 border-zinc-800 hover:border-zinc-700'
+                      }`}
+                    >
+                      <div className="flex items-start gap-3">
+                        <button
+                          type="button"
+                          onClick={() => toggleFarmStep(activeFarm.id, st.step)}
+                          className="mt-0.5 text-emerald-400 hover:text-emerald-300 transition-colors shrink-0"
+                          title={isDone ? 'Marcar como não concluído' : 'Marcar como concluído'}
+                        >
+                          {isDone ? (
+                            <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                          ) : (
+                            <Circle className="w-5 h-5 text-zinc-500 hover:text-emerald-400" />
+                          )}
+                        </button>
+
+                        <div className="flex-1 min-w-0 space-y-2.5">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <h4
+                              onClick={() => toggleFarmStep(activeFarm.id, st.step)}
+                              className={`text-sm font-bold cursor-pointer ${
+                                isDone ? 'text-emerald-300 line-through' : 'text-zinc-100'
+                              }`}
+                            >
+                              Etapa {st.step}: {st.title}
+                            </h4>
+                            <span className="text-[11px] font-mono text-emerald-400/90 font-semibold">
+                              {isDone ? '✓ Feito no Jogo' : 'Clique para marcar'}
+                            </span>
+                          </div>
+
+                          <p className="text-xs sm:text-sm text-zinc-300 leading-relaxed">
+                            {st.action}
+                          </p>
+
+                          {/* Block Placement Orientation Guide */}
+                          {st.blockPlacementGuide && (
+                            <div className="p-3 rounded-lg bg-emerald-950/25 border border-emerald-500/35 text-xs text-emerald-200 flex items-start gap-2.5">
+                              <Compass className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                              <div className="leading-relaxed">
+                                <strong className="text-emerald-300">Posicionamento de Bloco & Orientação: </strong>
+                                {st.blockPlacementGuide}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Troubleshooting Advice */}
+                          {st.troubleshooting && (
+                            <div className="p-3 rounded-lg bg-rose-950/25 border border-rose-500/40 text-xs text-rose-200 flex items-start gap-2.5">
+                              <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                              <div className="leading-relaxed">
+                                <strong className="text-rose-300">Atenção (Erro Comum): </strong>
+                                {st.troubleshooting}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Pro Tip */}
+                          {st.proTip && (
+                            <div className="p-2.5 rounded-lg bg-slate-950/90 border border-zinc-800 text-xs text-zinc-400 flex items-start gap-2">
+                              <Sparkles className="w-3.5 h-3.5 text-emerald-400 shrink-0 mt-0.5" />
+                              <div className="leading-relaxed">
+                                <strong className="text-emerald-300">Dica: </strong>
+                                {st.proTip}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
